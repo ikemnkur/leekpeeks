@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Gallery</title>
+    <style>
+        /* ... (previous CSS styles) ... */
+        .image-actions {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+        }
+        .image-actions button {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        #commentSection {
+            margin-top: 20px;
+        }
+        #commentInput {
+            width: 100%;
+            height: 60px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-buttons">
+            <button onclick="goToHome()">Home</button>
+            <button onclick="goToSearch()">Search</button>
+            <button onclick="viewRandomImage()">Random Image</button>
+        </div>
+        <div id="content"></div>
+    </div>
+    <script>
+        // ... (previous JavaScript code) ...
+
+        function viewImage(imageId) {
+            fetch(`/api/image/${imageId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const content = document.getElementById('content');
+                    content.innerHTML = `
+                        <div id="imageViewer">
+                            <canvas width="512" height="512"></canvas>
+                            <div class="image-info">
+                                <h2>${data.name}</h2>
+                                <p>Views: ${data.views}</p>
+                                <div class="image-actions">
+                                    <button onclick="likeImage(${imageId})">Like (${data.likes})</button>
+                                    <button onclick="dislikeImage(${imageId})">Dislike (${data.dislikes})</button>
+                                    <button onclick="shareImage()">Share</button>
+                                </div>
+                            </div>
+                            <div id="commentSection">
+                                <textarea id="commentInput" placeholder="Leave a comment..."></textarea>
+                                <button onclick="submitComment(${imageId})">Submit Comment</button>
+                                <div id="comments"></div>
+                            </div>
+                        </div>
+                    `;
+                    loadComments(imageId);
+                    const canvas = document.querySelector('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const img = new Image();
+                    img.onload = function() {
+                        ctx.drawImage(img, 0, 0, 512, 512);
+                    };
+                    img.src = data.url;
+                    
+                    // ... (zooming and panning code) ...
+                });
+        }
+
+        function likeImage(imageId) {
+            fetch(`/api/image/${imageId}/like`, { method: 'POST' })
+                .then(() => viewImage(imageId));
+        }
+
+        function dislikeImage(imageId) {
+            fetch(`/api/image/${imageId}/dislike`, { method: 'POST' })
+                .then(() => viewImage(imageId));
+        }
+
+        function shareImage() {
+            const shareLink = window.location.href;
+            prompt("Copy this link to share:", shareLink);
+        }
+
+        function submitComment(imageId) {
+            const comment = document.getElementById('commentInput').value;
+            fetch(`/api/image/${imageId}/comment`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ comment })
+            })
+            .then(() => {
+                document.getElementById('commentInput').value = '';
+                loadComments(imageId);
+            });
+        }
+
+        function loadComments(imageId) {
+            fetch(`/api/image/${imageId}/comments`)
+                .then(response => response.json())
+                .then(comments => {
+                    const commentsDiv = document.getElementById('comments');
+                    commentsDiv.innerHTML = comments.map(c => `
+                        <div class="comment">
+                            <p><strong>${c.nickname}:</strong> ${c.comment}</p>
+                        </div>
+                    `).join('');
+                });
+        }
+
+        function viewSlideshow(person) {
+            fetch(`/api/slideshow/${person}`)
+                .then(response => response.json())
+                .then(images => {
+                    let currentIndex = 0;
+                    const content = document.getElementById('content');
+                    content.innerHTML = `
+                        <div id="slideshow">
+                            <h2>${person} Slideshow</h2>
+                            <div id="slideshowImage"></div>
+                            <div class="slideshow-controls">
+                                <button onclick="previousImage()">Previous</button>
+                                <button onclick="nextImage()">Next</button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    function showCurrentImage() {
+                        const imageDiv = document.getElementById('slideshowImage');
+                        imageDiv.innerHTML = '';
+                        viewImage(images[currentIndex].id);
+                    }
+                    
+                    window.previousImage = function() {
+                        currentIndex = (currentIndex - 1 + images.length) % images.length;
+                        showCurrentImage();
+                    };
+                    
+                    window.nextImage = function() {
+                        currentIndex = (currentIndex + 1) % images.length;
+                        showCurrentImage();
+                    };
+                    
+                    showCurrentImage();
+                });
+        }
+
+        // Initial load
+        goToHome();
+    </script>
+</body>
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Gallery</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+        .nav-buttons button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .image-grid img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+        .search-results {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+        }
+        .search-results img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            filter: blur(5px);
+        }
+        .search-results a {
+            text-decoration: none;
+            color: #333;
+            text-align: center;
+        }
+        #imageViewer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        canvas {
+            border: 1px solid #ccc;
+        }
+        @media (max-width: 768px) {
+            .image-grid, .search-results {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-buttons">
+            <button onclick="goToHome()">Home</button>
+            <button onclick="goToSearch()">Search</button>
+            <button onclick="viewRandomImage()">Random Image</button>
+        </div>
+        <div id="content"></div>
+    </div>
+    <script>
+        // Check for nickname in local storage
+        if (!localStorage.getItem('nickname') || localStorage.getItem('nickname') === '') {
+            const nickname = prompt('Please enter a username:');
+            localStorage.setItem('nickname', nickname);
+        }
+
+        function goToHome() {
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="image-grid"></div>';
+            const grid = content.querySelector('.image-grid');
+            for (let i = 0; i < 9; i++) {
+                const img = document.createElement('img');
+                img.src = `/api/placeholder/200/200?text=Random${i+1}`;
+                img.alt = `Random Image ${i+1}`;
+                grid.appendChild(img);
+            }
+        }
+
+        function goToSearch() {
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <input type="text" id="searchInput" placeholder="Search for a person">
+                <button onclick="performSearch()">Search</button>
+                <div class="search-results"></div>
+            `;
+        }
+
+        function performSearch() {
+            const searchTerm = document.getElementById('searchInput').value;
+            const results = document.querySelector('.search-results');
+            results.innerHTML = '';
+            for (let i = 0; i < 25; i++) {
+                const a = document.createElement('a');
+                a.href = `#slideshow?person=${searchTerm}&image=${i+1}`;
+                const img = document.createElement('img');
+                img.src = `/api/placeholder/200/200?text=${searchTerm}${i+1}`;
+                img.alt = `${searchTerm} Image ${i+1}`;
+                a.appendChild(img);
+                a.appendChild(document.createTextNode(searchTerm));
+                results.appendChild(a);
+            }
+        }
+
+        function viewRandomImage() {
+            const content = document.getElementById('content');
+            content.innerHTML = '<div id="imageViewer"><canvas width="512" height="512"></canvas></div>';
+            const canvas = document.querySelector('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0, 512, 512);
+            };
+            img.src = `/api/placeholder/512/512?text=RandomImage`;
+            
+            let scale = 1;
+            let translateX = 0;
+            let translateY = 0;
+
+            canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const zoom = e.deltaY > 0 ? 0.9 : 1.1;
+                scale *= zoom;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.save();
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.scale(scale, scale);
+                ctx.translate(-canvas.width / 2 + translateX, -canvas.height / 2 + translateY);
+                ctx.drawImage(img, 0, 0, 512, 512);
+                ctx.restore();
+            });
+
+            let isDragging = false;
+            let lastX, lastY;
+
+            canvas.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                lastX = e.clientX;
+                lastY = e.clientY;
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    const deltaX = e.clientX - lastX;
+                    const deltaY = e.clientY - lastY;
+                    translateX += deltaX / scale;
+                    translateY += deltaY / scale;
+                    lastX = e.clientX;
+                    lastY = e.clientY;
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.save();
+                    ctx.translate(canvas.width / 2, canvas.height / 2);
+                    ctx.scale(scale, scale);
+                    ctx.translate(-canvas.width / 2 + translateX, -canvas.height / 2 + translateY);
+                    ctx.drawImage(img, 0, 0, 512, 512);
+                    ctx.restore();
+                }
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+        }
+
+        // Initial load
+        goToHome();
+    </script>
+</body>
+</html>

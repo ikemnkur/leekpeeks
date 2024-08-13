@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Gallery</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .image-grid img {
+            width: 100%;
+            height: auto;
+        }
+        @media (max-width: 768px) {
+            .image-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Image Gallery</h1>
+            <div>
+                <a href="#" class="button">Search</a>
+                <a href="#" class="button">Random Image</a>
+            </div>
+        </div>
+        <div class="image-grid">
+            <!-- Placeholder for 9 random thumbnail images -->
+            <img src="/api/placeholder/200/200" alt="Random Image 1">
+            <img src="/api/placeholder/200/200" alt="Random Image 2">
+            <img src="/api/placeholder/200/200" alt="Random Image 3">
+            <img src="/api/placeholder/200/200" alt="Random Image 4">
+            <img src="/api/placeholder/200/200" alt="Random Image 5">
+            <img src="/api/placeholder/200/200" alt="Random Image 6">
+            <img src="/api/placeholder/200/200" alt="Random Image 7">
+            <img src="/api/placeholder/200/200" alt="Random Image 8">
+            <img src="/api/placeholder/200/200" alt="Random Image 9">
+        </div>
+    </div>
+    <script>
+        // Check if nickname is stored in local storage
+        let nickname = localStorage.getItem('nickname');
+        if (!nickname) {
+            nickname = prompt('Please enter a username:');
+            if (nickname) {
+                localStorage.setItem('nickname', nickname);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Gallery</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .nav-buttons button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .image-grid img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+
+        .search-results {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+        }
+
+        .search-results img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            filter: blur(5px);
+        }
+
+        .search-results a {
+            text-decoration: none;
+            color: #333;
+            text-align: center;
+        }
+
+        #imageViewer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        canvas {
+            border: 1px solid #ccc;
+        }
+
+        @media (max-width: 768px) {
+
+            .image-grid,
+            .search-results {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* ... (previous styles remain the same) ... */
+        .image-actions {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+        }
+
+        .image-actions button {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        #commentSection {
+            margin-top: 20px;
+        }
+
+        #commentSection textarea {
+            width: 100%;
+            height: 100px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="nav-buttons">
+            <!-- <button onclick="app.goToHome()">Home</button>
+            <button onclick="app.goToSearch()">Search</button>
+            <button onclick="app.viewRandomImage()">Random Image</button> -->
+            <button onclick="goToHome()">Home</button>
+            <button onclick="goToSearch()">Search</button>
+            <button onclick="viewRandomImage()">Random Image</button>
+        </div>
+        <div id="content"></div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
